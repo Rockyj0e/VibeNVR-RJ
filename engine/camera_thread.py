@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 
 from utils import mask_url
+from ai_filters import filter_results_by_min_area
 from stream_reader import StreamReader
 from motion_detector import MotionDetector
 from recording_manager import RecordingManager
@@ -292,8 +293,10 @@ class CameraThread(threading.Thread):
                         else:
                             raw_ai_results = self.ai_detector.detect(ai_detect_frame, camera_id=self.camera_id, config=self.config)
                             
-                        # Filter results by motion zones (Exclusion zones)
-                        ai_results = self._filter_ai_results_by_zones(raw_ai_results)
+                        # Drop detections smaller than the per-camera minimum size,
+                        # then filter by motion zones (Exclusion zones)
+                        size_filtered_results = self._filter_ai_results_by_size(raw_ai_results)
+                        ai_results = self._filter_ai_results_by_zones(size_filtered_results)
                         
                         if ai_results:
                             self.latest_ai_results = ai_results
@@ -343,7 +346,7 @@ class CameraThread(threading.Thread):
                             # Broadcast AI metadata to WebCodecs clients
                             self.stream_reader.broadcast_metadata(ai_results)
                         elif raw_ai_results:
-                            logger.debug(f"Camera {self.config.get('name')} (ID: {self.camera_id}): AI inference ignored (object inside mask/exclusion zone)")
+                            logger.debug(f"Camera {self.config.get('name')} (ID: {self.camera_id}): AI inference ignored (below minimum size or inside mask/exclusion zone)")
                             self.latest_ai_results = []
                     
                     # Persistence: reuse latest AI results while motion is still considered active.
@@ -646,6 +649,19 @@ class CameraThread(threading.Thread):
         """Draw AI detection boxes and labels on the frame"""
         for res in results:
             self._draw_single_box(frame, res)
+
+    def _filter_ai_results_by_size(self, results):
+        """
+        Filters AI results smaller than the per-camera minimum object size
+        (ai_min_object_area, expressed as % of the frame area; 0 = disabled).
+        """
+        kept, dropped = filter_results_by_min_area(results, self.config.get('ai_min_object_area', 0.0))
+        for res in dropped:
+            logger.debug(
+                f"[AI-SIZE] Filtered out {res.get('label')} ({res.get('confidence', 0)*100:.0f}%) - "
+                f"box below minimum size ({self.config.get('ai_min_object_area')}% of frame)"
+            )
+        return kept
 
     def _filter_ai_results_by_zones(self, results):
         """

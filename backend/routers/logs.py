@@ -97,7 +97,7 @@ def generate_debug_report():
                 report.append(f"    Sub-stream URL: {safe_sub_url}")
                 
                 report.append(f"    Audio: Detect={cam.audio_enabled}, Enable={cam.enable_audio}")
-                report.append(f"    AI Engine: {cam.detect_engine}, Enabled={cam.ai_enabled}, Tracking={cam.ai_tracking_enabled}")
+                report.append(f"    AI Engine: {cam.detect_engine}, Enabled={cam.ai_enabled}, Tracking={cam.ai_tracking_enabled}, MinObjectArea={cam.ai_min_object_area}%")
                 
                 has_privacy = bool(cam.privacy_masks and cam.privacy_masks != "[]")
                 has_motion_masks = bool(cam.motion_masks and cam.motion_masks != "[]")

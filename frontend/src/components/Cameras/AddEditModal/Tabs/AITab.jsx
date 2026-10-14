@@ -152,6 +152,35 @@ export const AITab = ({ newCamera, setNewCamera, globalSettings }) => {
                             </div>
                         </div>
 
+                        <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 mt-6">
+                            <div className="space-y-1">
+                                <label htmlFor="minObjectArea" className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1 cursor-pointer">
+                                    {t('cameras.min_object_size', 'Minimum Object Size')}
+                                </label>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        id="minObjectArea"
+                                        type="range"
+                                        min="0"
+                                        max="10"
+                                        step="0.1"
+                                        disabled={isAiDisabledGlobally}
+                                        value={newCamera.ai_min_object_area ?? 0}
+                                        onChange={(e) => setNewCamera({ ...newCamera, ai_min_object_area: parseFloat(e.target.value) })}
+                                        className="flex-1 accent-primary h-1.5 bg-muted rounded-lg appearance-none cursor-pointer"
+                                    />
+                                    <span className="text-xs font-mono w-12 text-right">
+                                        {(newCamera.ai_min_object_area ?? 0) > 0
+                                            ? `${Number(newCamera.ai_min_object_area).toFixed(1)}%`
+                                            : t('cameras.min_object_size_off', 'Off')}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mt-2">
+                                    {t('cameras.min_object_size_help', 'Ignore detections whose box covers less than this share of the frame. Applies to every selected object type, so very distant people or small animals may be ignored too. Off = no size filtering.')}
+                                </p>
+                            </div>
+                        </div>
+
                         <div className="p-4 bg-muted/30 rounded-xl border border-border mt-6">
                             <Toggle
                                 label={t('cameras.object_tracking', 'Object Tracking')}

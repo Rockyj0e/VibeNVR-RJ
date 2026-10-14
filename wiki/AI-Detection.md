@@ -55,6 +55,7 @@ Navigate to **Cameras → Edit → AI & Tracking Tab** to configure per-camera d
 |---------|-------------|---------|
 | **AI Detection** | Toggle to enable ML-based detection for this camera | `Disabled` |
 | **Confidence Threshold** | Minimum score (0–100%) for a detection to count | `50%` |
+| **Minimum Object Size** | Ignore detections whose bounding box covers less than this share of the frame (0.1–10%) | `Off` |
 | **Allowed Objects** | Whitelisted list: `person`, `vehicle`, `dog`, etc. | `person, vehicle` |
 | **Tracking Enabled** | Enable persistent object tracking across frames | `Disabled` |
 
@@ -63,6 +64,9 @@ Navigate to **Cameras → Edit → AI & Tracking Tab** to configure per-camera d
 
 > [!NOTE]
 > Setting confidence too low (e.g., 33%) can cause false positives from spinning objects, reflections, or camera noise. **70%+ is recommended** for stable production use.
+
+> [!NOTE]
+> **Minimum Object Size** is measured as a percentage of the frame area and applies to every allowed object type on that camera. A distant person or a small animal can cover well under 1% of the frame, so raise the value gradually and check that real detections are not lost. Filtered detections do not trigger events, notifications, or recordings (they are logged at debug level as `[AI-SIZE]`).
 
 > [!IMPORTANT]
 > When the AI engine is active, `Passthrough Recording` **must be enabled** (the UI enforces this). This ensures the CPU is not overloaded by running video compression (`libx264`) and neural networks simultaneously.
